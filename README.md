@@ -6,8 +6,6 @@ GCcontentInReads: contains script for calculating GC content in reads.
 
 quadparsersuite: contains program for getting G4 location BED file, G4-CPMR, G4-start-site-CPMR, etc
 
-peaks: contains narrowPeak format files of peaks from pooled reads for LexoG0_G0gDNA, NS_G0gDNA, and NS_LexoG0           
-
 
 See Methods and especially the Supp Methods to our paper, "Characterizing and controlling intrinsic biases of Lambda exonuclease in nascent strand sequencing reveals phasing between nucleosomes and G-quadruplex motifs around a subset of human replication origins", for more information on analyzing peaks and reads.
 Get reads at the NCBI Short Read Archive (SRA): http://www.ncbi.nlm.nih.gov/sra
