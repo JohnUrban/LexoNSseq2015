@@ -1,0 +1,35 @@
+
+Usage: GCcontentInSamReads.py inputSAMFile readLength numN
+
+
+Parameters:
+    inputSAMFile - file of READS in SAM format; assumes no header lines.
+    readLength - the length of reads in file, assumes all same length (e.g. 50 bp)
+    numN - number of non(ACGT) letters (e.g. N, R, Y) allowed to occur in read -- any more and the read is ignored.
+        It is recommended to make numN = 0 (i.e. ignore reads with any non-ATGC letters, which is usually a very small proportion in Illumina data)
+
+Quick Start Example: 
+    $ GCcontentInSamReads.py file.sam 50 0
+
+Examples in different scenarios:
+    If starting with a SAM with no headers, just do:
+        $ GCcontentInSamReads.py file.sam readlen num
+        
+    If starting with a SAM with headers, just do:
+        $ grep -v ^@ file.sam | GCcontentInSamReads.py - readlen numN
+        
+    If starting with a BAM, just do:
+        $ samtools view file.bam | GCcontentInSamReads.py - readlen numN
+
+Output has 2 columns: 
+    1. G+C count from 0 to readLength
+    2. numReads with given G+C count
+ Multiply each number in the first column by 100, then divide by readlength to get percent GC.
+ Multiply each number in the second column by 100, then divide by the sum of second column to get the percent of total counts for each
+
+Try at commandline:
+    $ readlen=50
+    $ numN=0"
+    $ samtools view example-GC.bam | ./GCcontentInSamReads.py - $readlen $numN > numGCvsNumRead.txt
+    $ total=`awk '{SUM+=$2} END {print SUM}' numGCvsNumRead.txt`
+    $ awk -v readlen=$readLen -v total=$total 'OFS="\t" {print 100*$1/readlen, 100*$2/total}' numGCvsNumRead.txt
