@@ -1,5 +1,0 @@
-These peak files come gzipped.
-To reverse this (unzip), do:
-$ gunzip file.gz
-
-
