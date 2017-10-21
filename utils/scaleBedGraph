@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+echo "
+use: scaleBedGraph file.bdg scaleFactor
+
+scaleFactor will be used to multiply the score -- so if want to cut it down by half, give 0.5 -- want to double it, give 2
+
+"
+exit 0 
+fi
+
+
+### EXECUTE
+awk -v "scale=$2" 'OFS="\t" {print $1,$2,$3,$4*scale}' $1

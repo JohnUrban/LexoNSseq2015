@@ -1,0 +1,7 @@
+peaks: contains narrowPeak format files of peaks from pooled reads for LexoG0_G0gDNA, NS_G0gDNA, and NS_LexoG0
+
+These peak files come gzipped.
+To reverse this (unzip), do:
+$ gunzip file.gz
+
+

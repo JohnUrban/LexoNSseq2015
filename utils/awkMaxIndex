@@ -1,0 +1,3 @@
+#!/bin/bash
+
+awk -v max='-inf' '{if ($1 > max) {max=$1; i=NR}} END {print max, i}' $1

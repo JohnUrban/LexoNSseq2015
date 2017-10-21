@@ -1,0 +1,41 @@
+#!/bin/bash
+
+
+
+function help {
+    echo "Usage: scriptname -i:o:s:p:m:
+     	-i with argument = input file path
+     	-o with argument = output file name
+     	-s Seed for reproducibility
+	-p with argument = prob of keep each read (ie. fraction of reads to keep)
+	-m with argument = memory for java machine - e.g. 2g
+
+	Note: Picard Syntax for DownsampleSam without this wrapper is:
+	java -Xmx__ -jar $PICARD/DownsampleSam.jar INPUT=__ OUTPUT=__ RANDOM_SEED=__ PROBABILITY=__"
+}
+
+
+if [ $# -eq 0 ]
+then help
+exit
+fi
+
+while getopts "i:o:s:p:m:" arg; do
+    case $arg in
+        i) IN="INPUT=$OPTARG";;
+	o) OUT="OUTPUT=$OPTARG";;
+        s) SEED="RANDOM_SEED=$OPTARG";;
+	p) PROB="PROBABILITY=$OPTARG";;
+	m) MEM="-Xmx$OPTARG";;
+	*) help;;
+    esac
+done
+
+module load picard-tools 2> /dev/null ## Supress "module loading ..." msg
+
+#echo $IN $OUT $SEED $PROB
+
+java ${MEM} -jar $PICARD/DownsampleSam.jar ${IN} ${OUT} ${SEED} ${PROB}
+
+## Note: Syntax works out to be:
+## java -Xmx$OPTARG -jar $PICARD/DownsampleSam.jar INPUT=$OPTARG OUTPUT=$OPTARG RANDOM_SEED=$OPTARG PROBABILITY=$OPTARG

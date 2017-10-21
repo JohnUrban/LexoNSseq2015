@@ -1,0 +1,26 @@
+#!/bin/bash
+
+## Usage:
+
+function help {
+    echo "Usage: scriptname -i:o:s:p:m:
+     	-i with argument = input file path
+	-m max peak length
+"
+}
+
+
+if [ $# -eq 0 ]
+then help
+exit
+fi
+
+while getopts "i:o:s:p:m:" arg; do
+    case $arg in
+        i) IN=$OPTARG;;
+	m) MAX=$OPTARG;;
+	*) help;;
+    esac
+done
+
+awk -v "MAX=$MAX" '{if ($3-$2 <= MAX) print $0}' $IN

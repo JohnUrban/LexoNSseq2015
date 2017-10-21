@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then echo "
+Usage: bedLengthSum BEDfile
+Results: numLines  SumOfLengths  meanLength
+"; exit 0; fi
+
+awk 'OFS="\t" {SUM+=$3-$2} END {print NR, SUM, SUM/NR}' $1

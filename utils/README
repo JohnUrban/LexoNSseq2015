@@ -1,0 +1,8 @@
+Oct 2017 - by JohnUrban
+Most, if not all of this code, was made a few years ago (e.g. 2011-2014) when analyzing NS-seq data.
+
+I am providing it here to help Miiko Sokka, and others, reproduce some of the analyses from our 2015 GR NS-seq paper.
+
+Perhaps at one point in the future I will gather the exact commands used at each step to reproduce the analyses.
+
+So far Miiko has been able to reproduce all of the analyses in that paper (as well as the plasmid experiments).

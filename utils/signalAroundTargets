@@ -1,0 +1,88 @@
+#!/bin/bash
+
+
+if [ $# -eq 0 ]; then
+echo "
+Usage: scriptname targets genomeFile lengthToExtendTargetsInBothDir bedGraph summary|tv|both
+
+Version 1.1
+
+Notes:
+- July 2014 update: assumes both targets.bed and signal.bedGraph are sorted for use of -sorted option in intersectBed
+	- This uses the chromSweep algorithm and is insanely faster than normal intersectBed
+- targets are usually single bp entries such as centers or summits
+- summary returns a tab-delimited, 4 column file of "relative position", "summed score", "mean score", "numDataPointsForPosition"
+	- the mean is summedScore/numDataPointsForPosition 
+	-- this mean deals with missing data points by only calculating the mean from available data points
+	-- One could divide all by the number of targets as well -- but this way assumes all missing data = 0
+	- the tsv file can next be loaded into R and plotted with plot()
+		- e.g. plot(relativePosition,summedScore)
+- tv returns a comma-separated file where each line/row represents a target with its scores in order from left->target->right
+	- this matrix is brought into R: read.table(file="filename", header=F, sep=",", na.strings=".")
+	-a tv screen plot can be made with image(), heatmap(), or levelplot() [lattice]
+		- for each, t(matrix) should be used
+	- in R, one could also do rowSums, rowMeans, colSums, colMeans (etc) 
+		- actually one can do anything with this data that you could do with the output of "sum" but not vice versa
+	- the cost can be that the file is much much larger and R takes a long time to load large matrices
+- both does both the "summary" and "tv" operations
+	it prints both to stdout (for now) which can be directed into a single file
+	these outputs can be separated by grepping on the commas in the csv output of 'tv'. simply use:
+		grep , fileName 
+		grep -v , fileName
+
+Dependencies:
+BEDtools, awk, and signalAroundTargets.py
+
+Rate-limiting step:
+The rate limiting step for all 3 options is the same -- the intersectBed step against the bedGraph.
+The python operations are all of the same time complexity though 'both' could take slightly longer than just one option.
+
+Also try:
+#1 mean summary with bedtools
+slopBed -i summits.bed -g ~/data/hg19/features/hg19.genome -b 1000 | awk 'OFS="\t" {print $1,$2,$3,"peak"NR}' | bedtools makewindows -b - -n 2001 -i srcwinnum |  tr "_" "\t" |  sort -k1,1 -k2,2n | mapBed -a - -b signal.bedGraph -c 4 -o mean -null 0 | sort -t$'\t' -k5,5n |  bedtools groupby -i - -g 5 -c 6 -o mean
+Note1: that this treats "." as 0 instead of as missing data.
+Note2: for bedgraph file specification, you can do: -b <(bigWigToBedGraph  wgEncodeHaibTfbsH1hescSp1Pcr1xRawRep1.bigWig stdout)
+Actually -- using sum in map (not mean) and sum in groupby (not mean) gives same sum as this code.
+----> using sum in map and mean in groupby gives, from what I can tell, mean if divided by numpeaks (i.e. treating "." like 0 instead of missing)
+slopBed -i summits.bed -g ~/data/hg19/features/hg19.genome -b 1000 | awk 'OFS="\t" {print $1,$2,$3,"peak"NR}' | bedtools makewindows -b - -n 2001 -i srcwinnum |  tr "_" "\t" |  sort -k1,1 -k2,2n | mapBed -a - -b signal.bedGraph -c 4 -o sum -null 0 | sort -t$'\t' -k5,5n |  bedtools groupby -i - -g 5 -c 6 -o sum
+
+
+
+#2 tvscreen with bedtools
+slopBed -i summits.bed -g ~/data/hg19/features/hg19.genome -b 1000 | awk 'OFS="\t" {print $1,$2,$3,"peak"NR}' | bedtools makewindows -b - -n 2001 -i srcwinnum | sort -k1,1 -k2,2n | tr \"_\" \"\\t\" | mapBed -a - -b wgEncodeSydhNsomeK562Sig.bedGraph -c 4 -o mean |  sort -k4,4 -k5,5n | bedtools groupby -i - -g 4 -c 6 -o collapse
+Note1: This will make tvscreen in second column. As is, it will leave "." as missing data. Use "-null 0" in mapbed to turn "." into 0 (or any other number).
+
+
+Since #1 is less precise than my script, another option is to do #2 and pipe that into \"signalAroundTargets.py tvToSum 1000\"
+That makes sense if it is faster than the current implementation of my script which uses intersectBed instead of mapBed and python loops instead of groupby.
+"
+exit
+fi
+
+
+targets=$1
+genomeFile=$2
+extBothDir=$3
+numWin=`echo $extBothDir*2 +1 | bc -l`
+bedGraph=$4
+method=$5
+
+#echo $targets
+#echo $genomeFile
+#echo $extBothDir
+#echo $numWin
+#echo $bedGraph
+
+if [ $method == "summary" ]; then
+slopBed -i $targets -g $genomeFile -b $extBothDir | awk 'OFS="\t" {print $1,$2,$3}' | bedtools makewindows -b - -n $numWin -i winnum | sortBed -i - | intersectBed -sorted -wb -a - -b $bedGraph | awk -v extBothDir=$extBothDir 'OFS="\t" {print $4-extBothDir-1,$8}' | signalAroundTargets.py sum
+##the awk after 1st pipe ensures may not be entirely necessary -- but it may ensure stable results with an input bed with mre fields than what I worked with to develop
+
+elif [ $method == "tv" ]; then
+slopBed -i $targets -g $genomeFile -b $extBothDir | awk 'OFS="\t" {print $1,$2,$3,NR}' | bedtools makewindows -b - -n $numWin -i srcwinnum | sortBed -i - | intersectBed -sorted -loj -a - -b $bedGraph | awk -v extBothDir=$extBothDir 'OFS="\t" {print $4,$8}' | awk -v extBothDir=$extBothDir 'OFS="\t" {sub(/_/,"\t"); print $1,$2-extBothDir-1,$3}' |  signalAroundTargets.py tv
+
+
+elif [ $method == "both" ]; then
+slopBed -i $targets -g $genomeFile -b $extBothDir | awk 'OFS="\t" {print $1,$2,$3,NR}' | bedtools makewindows -b - -n $numWin -i srcwinnum | sortBed -i - | intersectBed -sorted -loj -a - -b $bedGraph | awk -v extBothDir=$extBothDir 'OFS="\t" {print $4,$8}' | awk -v extBothDir=$extBothDir 'OFS="\t" {sub(/_/,"\t"); print $1,$2-extBothDir-1,$3}' |  signalAroundTargets.py both
+
+fi
+

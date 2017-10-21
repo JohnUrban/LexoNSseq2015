@@ -1,0 +1,3 @@
+#!/bin/bash
+
+awk -v min='inf' -v max='-inf' '{if ($1 < min) min=$1} {if ($1 > max) max = $1} END {print min, max}' $1

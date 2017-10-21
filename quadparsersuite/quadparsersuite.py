@@ -269,7 +269,7 @@ intab=  'actguACTGU'
 outtab= 'tgacaTGACA'
 if args.regexrev is None:
     transtab = string.maketrans(intab, outtab)
-    regexrev= args.regex.translate(transtab)
+    regexrev = args.regex.translate(transtab)
 else:
     regexrev= args.regex
 

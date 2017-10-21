@@ -1,0 +1,39 @@
+#!/bin/bash
+
+
+
+function help {
+    echo "Usage: scriptname -i:o:s:p:m:
+     	-i with argument = input file path (req)
+     	-o with argument = output file name (req) -- output format is BAM even if SAM input
+     	-M with argument = metrics file name  (req)
+	-r with argument = logical, remove reads (true) or simply mark as duplicate (false)
+	-m with argument = memory for java machine - e.g. 2g
+
+	Note: Picard Syntax for MarkDuplicates without this wrapper is:
+        java -Xmx__ -jar $PICARD/MarkDuplicates.jar INPUT=inFileName OUTPUT=outFileName METRICS_FILE=metFileName REMOVE_DUPLICATES=logical  ASSUME_SORTED=logical"
+}
+
+
+if [ $# -eq 0 ]
+then help
+exit
+fi
+
+while getopts "i:o:M:r:m:" arg; do
+    case $arg in
+        i) IN="INPUT=$OPTARG";;
+	o) OUT="OUTPUT=$OPTARG";;
+        M) METRICS="METRICS_FILE=$OPTARG";;
+	r) REMOVE="REMOVE_DUPLICATES=$OPTARG";;
+	m) MEM="-Xmx$OPTARG";;
+	*) help;;
+    esac
+done
+
+module load picard-tools 2> /dev/null ## Supress "module loading ..." msg
+
+java ${MEM} -jar $PICARD/MarkDuplicates.jar ${IN} ${OUT} ${METRICS} ${REMOVE} ASSUME_SORTED=true
+
+## Note: Syntax works out to be:
+## java -Xmx$OPTARG(e.g. 2g) -jar /gpfs/runtime/opt/picard-tools/1.88/picard-tools-1.88/MarkDuplicates.jar INPUT=inFileName OUTPUT=outFileName METRICS_FILE=metFileName REMOVE_DUPLICATES=logical  ASSUME_SORTED=logical(I keep as true as SAMtools does not change the header when it sorts)
