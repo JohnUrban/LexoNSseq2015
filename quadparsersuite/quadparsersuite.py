@@ -148,6 +148,13 @@ DESCRIPTION
     hg19 gaps can be found at UCSC Table Browser:
     http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=411961815_wAeC9o7jDZHSWZKpzI8tIrVsQMS4&clade=mammal&org=Human&db=hg19&hgta_group=map&hgta_track=gap&hgta_table=0&hgta_regionType=genome&position=chr21%3A33031597-33041570&hgta_outputType=primaryTable&hgta_outFileName=
     
+
+    NOTE Nov 2017:
+    New i-motif paper (featuring Julian Hupper) gives a regex for i-motifs:
+    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5605235/
+    motif = C5(N1-19C5)3
+    written as regex = [Cc]{5,}(\w{1,19}[Cc]{5,}){3,}
+
     """, formatter_class= argparse.RawTextHelpFormatter)
 
 
@@ -182,9 +189,9 @@ As such, the default minG value is 3.
 parser.add_argument('--maxN', '-n',
                    type= int,
                    help='''maxN is the maximum number of number of Ns in loops between G tracts.
-A G4 is typically defined as: ([gG]{3}\w{1,7}){3,}[gG]{3}
+A G4 is typically defined as: ([gG]{3,}\w{1,7}){3,}[gG]{3,}
 As such, the default maxN value is 7.
-Recently people have also often used maxN=15 -- i.e. ([gG]{3}\w{1,15}){3,}[gG]{3}
+Recently people have also often used maxN=15 -- i.e. ([gG]{3,}\w{1,15}){3,}[gG]{3,}
 Note, though, as G4 motifs get longer, they become less likely to actually form G4s,
 especially in the context of dsDNA.
                    ''',
