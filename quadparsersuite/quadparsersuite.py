@@ -162,7 +162,7 @@ parser.add_argument('--regex', '-r',
                    type= str,
                    help='''Regex to be searched in the fasta input.
 Matches to this regex will have + strand. This string passed to python
-re.compile(). The default regex is '([gG]{3}\w{1,7}){3,}[gG]{3}' which searches
+re.compile(). The default regex is '([gG]{3,}\w{1,7}){3,}[gG]{3,}' which searches
 for G-quadruplexes.
                                    
                    ''',
@@ -181,7 +181,7 @@ By default (None), --regexrev will be --regex complemented by replacing
 parser.add_argument('--minG', '-g',
                    type= int,
                    help='''minG is the minimum number of Gs in a G tract.
-A G4 is typically defined as: ([gG]{3}\w{1,7}){3,}[gG]{3}
+A G4 is typically defined as: ([gG]{3,}\w{1,7}){3,}[gG]{3,}
 As such, the default minG value is 3.
                    ''',
                    default=3)
