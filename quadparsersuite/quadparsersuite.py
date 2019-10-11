@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 ## this has been modified from original (on June 9, 2014)
 ## Original script Copy/pasted from:
 ## http://bioinformatics-misc.googlecode.com/svn-history/r16/trunk/quadparser.py
@@ -155,6 +155,10 @@ DESCRIPTION
     motif = C5(N1-19C5)3
     written as regex = [Cc]{5,}(\w{1,19}[Cc]{5,}){3,}
 
+    NOTE Sep 2018:
+    Be careful with the default reverse regex.
+    It gives the complement, not the reverse complement.
+
     """, formatter_class= argparse.RawTextHelpFormatter)
 
 
@@ -173,10 +177,12 @@ parser.add_argument('--regexrev', '-R',
                    help='''The second regex to be searched in fasta input.
 Matches to this regex will have - strand.
 By default (None), --regexrev will be --regex complemented by replacing
-'actguACTGU' with 'tgacaTGACA'.  
-                                   
-                   ''',
-                   default= None)
+'actguACTGU' with 'tgacaTGACA'.
+For now, if you want the reverse complement regex, provide it as part of --regex and use --noreverse.
+For example, instead of "-r CACGAG", do "-r 'CACGAG|CTCGTG' ". ''', default=None)
+#and reversing the order (i.e. reverse complement).
+#Older versions of this program used the complement by default -- so be careful w/ older pipelines.
+
 
 parser.add_argument('--minG', '-g',
                    type= int,
@@ -277,8 +283,10 @@ outtab= 'tgacaTGACA'
 if args.regexrev is None:
     transtab = string.maketrans(intab, outtab)
     regexrev = args.regex.translate(transtab)
+    #print regexrev
+    ###regexrev = args.regex.translate(transtab)[-1::-1] ## need revcomp as default -- need to be able to do this to complex regexes though
 else:
-    regexrev= args.regex
+    regexrev = args.regex
 
 """ Opening file connection or dealing with stdin """
 if args.inputFile == '-':
